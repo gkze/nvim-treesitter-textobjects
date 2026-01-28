@@ -10,35 +10,34 @@
 
 ; Parameters
 ; ----------
-; formal arguments in { ... } pattern
-((formals
-  "," @_start
+; formal arguments in { ... } pattern (not first)
+(formals
+  "," @parameter.outer
   .
-  (formal) @parameter.inner)
-  (#make-range! "parameter.outer" @_start @parameter.inner))
+  (formal) @parameter.inner @parameter.outer)
 
-((formals
+; formal arguments in { ... } pattern (first)
+(formals
   .
-  (formal) @parameter.inner
+  (formal) @parameter.inner @parameter.outer
   .
-  ","? @_end)
-  (#make-range! "parameter.outer" @parameter.inner @_end))
+  ","? @parameter.outer)
 
 ; single identifier argument: x: body
 (function_expression
-  (_) @parameter.outer
-  body: (_))
+  universal: (identifier) @parameter.inner @parameter.outer)
 
 ; Comments
 ; --------
 ; leave space after comment marker if there is one
 ((comment) @comment.inner @comment.outer
-  (#offset! @comment.inner 0 2 0)
-  (#lua-match? @comment.outer "# .*"))
+  (#offset! @comment.inner 0 2 0 0)
+  (#lua-match? @comment.outer "^# "))
 
 ; else remove everything except comment marker
 ((comment) @comment.inner @comment.outer
-  (#offset! @comment.inner 0 1 0))
+  (#offset! @comment.inner 0 1 0 0)
+  (#not-lua-match? @comment.outer "^# "))
 
 ; Conditionals
 ; ------------
